@@ -11,8 +11,9 @@ if [ ! -f ~/.local/lib/libgeos.so ]; then
   tar xvf geos-3.6.1.tar.bz2
   cd geos-3.6.1/
   ./configure --prefix=$HOME/.local
-  make -j4
+  make
   make install
+  cd ..
 fi
 
 # Install virtualenvwrapper package if not already installed
@@ -32,7 +33,7 @@ if [ ! -d ~/.virtualenvs/geometry/ ]; then
   mkvirtualenv geometry
   # deleting cached packages to force download
   rm -rf ~/.cache/pip/
-  pip install -r requirements.txt -I
+  pip install -r requirements.txt -I --no-cache-dir
   pip install -e .
 else
   export WORKON_HOME=~/.virtualenvs
@@ -47,6 +48,6 @@ else
     echo "Updating dependencies"
     # deleting cached packages to force download
     rm -rf ~/.cache/pip/
-    pip install -r requirements.txt -I
+    pip install -r requirements.txt -I --no-cache-dir
   fi
 fi

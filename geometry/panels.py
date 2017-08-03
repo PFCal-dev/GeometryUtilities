@@ -1,4 +1,5 @@
 
+import cPickle as pickle
 import math
 from geometry.cmssw import read_geometry
 from geometry.generators import HexagonGenerator, GridGenerator, shift_point, SectorGenerator
@@ -92,11 +93,11 @@ def modules_to_panels(wafer_size, grid_size):
     for isec,sector_panels in enumerate(panels):
         sector_modules = sector_to_modules[isec]
         for ipan,panel in enumerate(sector_panels):
-            panel_to_modules[compute_id(isec,ipan)] = []
+            panel_to_modules[compute_id(isec,ipan+1)] = []
             panel_modules = intersect_modules(panel, sector_modules)
             for module in panel_modules:
-                module_to_panel[module.id] = (isec, ipan)
-                panel_to_modules[compute_id(isec,ipan)].append(module.id)
+                module_to_panel[module.id] = (isec, ipan+1)
+                panel_to_modules[compute_id(isec,ipan+1)].append(module.id)
     return module_to_panel, panel_to_modules
 
 

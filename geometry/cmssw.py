@@ -185,4 +185,36 @@ def read_geometry(filename, treename, subdet, layer, wafer=-1):
             ))
     return output_cells
 
+def read_bh_geometry(filename, treename):
+    # Read cells from one side
+    selection = "zside==1 && subdet==2 && layer==1"
+    branches = ['id',
+            'ieta', 'iphi', 
+            'x', 'y']
+    for corner in xrange(1,5):
+        branches.append('x{}'.format(corner))
+        branches.append('y{}'.format(corner))
+    cells = root2array(filename, treename=treename, branches=branches, selection=selection)
+    # Create cell shapes
+    output_cells = []
+    for cell in cells:
+        vertices = Polygon([(cell['x1'],cell['y1']),
+            (cell['x2'],cell['y2']),
+            (cell['x3'],cell['y3']),
+            (cell['x4'],cell['y4'])])
+        barycenter = Point((cell['x'],cell['y']))
+        output_cells.append(Cell(
+            id=int(cell['id']),
+            layer=1,
+            subdet=5,
+            zside=1,
+            module=1,
+            ieta=int(cell['ieta']),
+            iphi=int(cell['iphi']),
+            center=barycenter,
+            vertices=vertices
+            ))
+    return output_cells
+
+
 

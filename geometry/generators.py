@@ -26,6 +26,22 @@ class PanelGenerator(object):
             panel = rotate(panel, rotation)
         return panel
 
+
+class PanelGeneratorTest(object):
+    def __init__(self, hexagon_size, module_list=[]):
+        self._vertices = []
+        for module in module_list:
+            column = module[0]
+            row = module[1]
+            point0 = Point((0,0))
+            point0 = translate(point0, xoff=-hexagon_size*math.sqrt(3)/2.*column, yoff=hexagon_size/2.*column)
+            self._vertices.append((point0.x, point0.y+hexagon_size*row))
+        self._vertices.append((self._vertices[0][0]-hexagon_size/10, self._vertices[0][1]))
+
+    def __call__(self, point, mirror=False, rotation=0):
+        panel = Polygon([(point.x+vx, point.y+vy) for vx,vy in self._vertices])
+        return panel
+
 class SectorGenerator(object):
     def __init__(self, hexagon_size, panel_length=3, panel_width=2,
             # Number of rows for each panel column
@@ -62,6 +78,25 @@ class SectorGenerator(object):
             panels.append(p)
         return panels
 
+
+class SectorGeneratorTest(object):
+    def __init__(self, hexagon_size, panel_list=[]):
+        self._panels = []
+        point0 = Point((0,0))
+        for panel in panel_list:
+            panel_generator = PanelGeneratorTest(hexagon_size, panel)
+            panel = panel_generator(point0)
+            self._panels.append(panel)
+
+    def __call__(self, point, rotation=0):
+        panels = []
+        for panel in self._panels:
+            p = translate(panel, xoff=point.x, yoff=point.y)
+            if rotation!=0:
+                # Rotate around the origin
+                p = rotate(p, rotation, origin=(0,0))
+            panels.append(p)
+        return panels
 
 
 class HexagonGenerator(object):

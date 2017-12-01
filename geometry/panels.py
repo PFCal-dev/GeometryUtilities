@@ -2,7 +2,7 @@
 import cPickle as pickle
 import math
 from geometry.cmssw import read_geometry
-from geometry.generators import HexagonGenerator, GridGenerator, shift_point, SectorGenerator
+from geometry.generators import HexagonGenerator, GridGenerator, shift_point, SectorGenerator, SectorGeneratorTest
 from shapely.geometry import Polygon, Point
 from geometry.cell import Cell
 from shapely.affinity import rotate
@@ -80,6 +80,18 @@ def generate_panels(wafer_size):
     panels.append([rotate(panel, 300, origin=(0,0)) for panel in panels0])
     return panels
 
+
+def generate_panels_test(wafer_size, panel_list):
+    panels0 = SectorGeneratorTest(wafer_size*sqrt3o2, panel_list)(Point(0,0))
+    panels = []
+    panels.append(panels0)
+    panels.append([rotate(panel, 60, origin=(0,0)) for panel in panels0])
+    panels.append([rotate(panel, 120, origin=(0,0)) for panel in panels0])
+    panels.append([rotate(panel, 180, origin=(0,0)) for panel in panels0])
+    panels.append([rotate(panel, 240, origin=(0,0)) for panel in panels0])
+    panels.append([rotate(panel, 300, origin=(0,0)) for panel in panels0])
+    return panels
+
 def modules_to_panels(wafer_size, grid_size):
     modules = generate_modules(wafer_size, grid_size)
     full_layer = HexagonGenerator(wafer_size*grid_size*sqrt3o2)(Point(0,0))
@@ -101,3 +113,22 @@ def modules_to_panels(wafer_size, grid_size):
     return module_to_panel, panel_to_modules
 
 
+def modules_to_panels_test(wafer_size, grid_size, panel_list):
+    modules = generate_modules(wafer_size, grid_size)
+    full_layer = HexagonGenerator(wafer_size*grid_size*sqrt3o2)(Point(0,0))
+    sectors = generate_sectors(full_layer, wafer_size)
+    panels = generate_panels_test(wafer_size, panel_list)
+    sector_to_modules = {}
+    module_to_panel = {}
+    panel_to_modules = {}
+    for i,sector in enumerate(sectors):
+        sector_to_modules[i] = intersect_modules(sector, modules)
+    for isec,sector_panels in enumerate(panels):
+        sector_modules = sector_to_modules[isec]
+        for ipan,panel in enumerate(sector_panels):
+            panel_to_modules[compute_id(isec,ipan+1)] = []
+            panel_modules = intersect_modules(panel, sector_modules)
+            for module in panel_modules:
+                module_to_panel[module.id] = (isec, ipan+1)
+                panel_to_modules[compute_id(isec,ipan+1)].append(module.id)
+    return module_to_panel, panel_to_modules
